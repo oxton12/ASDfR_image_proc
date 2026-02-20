@@ -14,6 +14,7 @@
 #include "opencv2/imgproc.hpp"
 
 namespace imgproc {
+
 class ColorTracker : public rclcpp::Node {
  public:
   explicit ColorTracker(const rclcpp::NodeOptions& options);
