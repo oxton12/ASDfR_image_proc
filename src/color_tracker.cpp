@@ -1,3 +1,13 @@
+//==============================================================================
+// Authors : Max Solis, Aleksei Obshatko
+// Group : ASDfR 5
+// License : LGPL open source license
+//
+// Brief : Node that detects the brightest region in a specific channel an image
+// received over the "image" topic and publishes it's center of mass in the
+// topic "tracked_CoM" and it's bounding box in topic "tracked_bbox"
+//==============================================================================
+
 #include <color_tracker.hpp>
 
 namespace imgproc {
@@ -14,8 +24,7 @@ ColorTracker::ColorTracker(const rclcpp::NodeOptions& options)
       "tracked_bbox", 10);
 
   channel_ = this->declare_parameter("channel", "k");
-  if (channel_ != "b" && channel_ != "g" && channel_ != "r" &&
-      channel_ != "k") {
+  if (!checkChannel(channel_)) {
     throw std::invalid_argument("Unexpected channel value " + channel_);
   }
   threshold_ = this->declare_parameter("threshold", 200);
@@ -28,8 +37,9 @@ ColorTracker::ColorTracker(const rclcpp::NodeOptions& options)
 }
 
 void ColorTracker::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg) {
-  cv_bridge::CvImagePtr imgPtr;
+  cv_bridge::CvImagePtr imgPtr;  // pointer to the received image
 
+  // Convert ROS image to OpenCV image
   try {
     imgPtr = cv_bridge::toCvCopy(msg, msg->encoding);
   } catch (const cv_bridge::Exception& e) {
@@ -37,11 +47,13 @@ void ColorTracker::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg) {
     return;
   }
 
-  cv::Mat singleChannel = extractChannel(imgPtr);
-  cv::Mat imgBinary = binaryze(singleChannel);
+  cv::Mat singleChannel =
+      extractChannel(imgPtr);  // a copy of the chosen image channel
+  cv::Mat imgBinary =
+      binaryze(singleChannel);  // image after threshold and cleanup
 
-  geometry_msgs::msg::Point comMsg;
-  vision_msgs::msg::BoundingBox2D bboxMsg;
+  geometry_msgs::msg::Point comMsg;         // center of mass message
+  vision_msgs::msg::BoundingBox2D bboxMsg;  // bounding box message
 
   getComBbox(imgBinary, comMsg, bboxMsg);
 
@@ -55,13 +67,13 @@ void ColorTracker::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg) {
 
 rcl_interfaces::msg::SetParametersResult ColorTracker::parametersCallback(
     const std::vector<rclcpp::Parameter>& params) {
-  rcl_interfaces::msg::SetParametersResult result;
+  rcl_interfaces::msg::SetParametersResult
+      result;  // result of parameter change
   result.successful = true;
   for (const auto& param : params) {
     if (param.get_name() == "channel") {
-      std::string newChannel = param.as_string();
-      if (newChannel != "b" && newChannel != "g" && newChannel != "r" &&
-          newChannel != "k") {
+      std::string newChannel = param.as_string();  // received channel value
+      if (!checkChannel(newChannel)) {
         result.successful = false;
         result.reason = "Unexpected channel value \"" + newChannel +
                         "\". Parameter is not changed.";
@@ -79,61 +91,64 @@ rcl_interfaces::msg::SetParametersResult ColorTracker::parametersCallback(
 cv::Mat ColorTracker::extractChannel(const cv_bridge::CvImagePtr imgPtr) {
   cv::Mat singleChannel;
 
+  // Return input if it is single channel
   if (imgPtr->image.channels() == 1) {
-    singleChannel = imgPtr->image;
-  } else {
-    switch (channel_[0]) {
-      case 'k':
-        cv::cvtColor(imgPtr->image, singleChannel, cv::COLOR_BGR2GRAY);
-        break;
+    return imgPtr->image;
+  }
 
-      case 'b': {
-        std::vector<cv::Mat> channels;
-        cv::split(imgPtr->image, channels);
-        singleChannel = channels[0];
-        break;
-      }
+  switch (channel_[0]) {
+    case 'k':
+      cv::cvtColor(imgPtr->image, singleChannel, cv::COLOR_BGR2GRAY);
+      break;
 
-      case 'g': {
-        std::vector<cv::Mat> channels;
-        cv::split(imgPtr->image, channels);
-        singleChannel = channels[1];
-        break;
-      }
-
-      case 'r': {
-        std::vector<cv::Mat> channels;
-        cv::split(imgPtr->image, channels);
-        singleChannel = channels[2];
-        break;
-      }
-
-      default:
-        throw std::invalid_argument("Unexpected channel name " + channel_);
-        break;
+    case 'b': {
+      std::vector<cv::Mat> channels;  // vector of channels
+      cv::split(imgPtr->image, channels);
+      singleChannel = channels[0];
+      break;
     }
+
+    case 'g': {
+      std::vector<cv::Mat> channels;  // vector of channels
+      cv::split(imgPtr->image, channels);
+      singleChannel = channels[1];
+      break;
+    }
+
+    case 'r': {
+      std::vector<cv::Mat> channels;  // vector of channels
+      cv::split(imgPtr->image, channels);
+      singleChannel = channels[2];
+      break;
+    }
+
+    default:
+      throw std::invalid_argument("Unexpected channel name " + channel_);
+      break;
   }
 
   return singleChannel;
 }
 
-cv::Mat ColorTracker::binaryze(const cv::Mat& singleChannel) {
-  cv::Mat imgBinary;
-  cv::threshold(singleChannel, imgBinary, threshold_, 255, cv::THRESH_BINARY);
+cv::Mat ColorTracker::binaryze(const cv::Mat& inputImg) {
+  cv::Mat imgBinary;  // channel after threshold
+  cv::threshold(inputImg, imgBinary, threshold_, 255, cv::THRESH_BINARY);
 
-  cv::Mat imgClosed;
-  cv::Mat imgOpened;
+  cv::Mat imgOpened;  // channel after opening
+  cv::Mat imgClosed;  // channel after closing
   cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
-  cv::morphologyEx(imgBinary, imgClosed, cv::MORPH_OPEN, kernel);
-  cv::morphologyEx(imgClosed, imgOpened, cv::MORPH_OPEN, kernel);
-  return imgOpened;
+  cv::morphologyEx(imgBinary, imgOpened, cv::MORPH_OPEN, kernel);
+  cv::morphologyEx(imgOpened, imgClosed, cv::MORPH_CLOSE, kernel);
+  return imgClosed;
 }
 
 void ColorTracker::getComBbox(const cv::Mat& imgBinary,
                               geometry_msgs::msg::Point& comMsg,
                               vision_msgs::msg::BoundingBox2D& bboxMsg) {
-  cv::Moments m = cv::moments(imgBinary, true);
+  cv::Moments m =
+      cv::moments(imgBinary, true);  // moments of the white pixels on the image
 
+  // If area is 0, set all values to invalid and return
   if (m.m00 == 0) {
     comMsg.x = -1;
     comMsg.y = -1;
@@ -147,16 +162,18 @@ void ColorTracker::getComBbox(const cv::Mat& imgBinary,
     return;
   }
 
-  double cx = m.m10 / m.m00;
-  double cy = m.m01 / m.m00;
+  double cx = m.m10 / m.m00;  // x coordinate of the CoM
+  double cy = m.m01 / m.m00;  // y coordinate of the CoM
 
   comMsg.x = cx;
   comMsg.y = cy;
   comMsg.z = 0;
 
   cv::Rect bbox = cv::boundingRect(imgBinary);
-  float bbox_cx = bbox.x + bbox.width / 2;
-  float bbox_cy = bbox.y + bbox.height / 2;
+  float bbox_cx =
+      bbox.x + bbox.width / 2;  // x coordinate of the bounding box center
+  float bbox_cy =
+      bbox.y + bbox.height / 2;  // y coordinate of the bounding box center
 
   bboxMsg.center.position.x = bbox_cx;
   bboxMsg.center.position.y = bbox_cy;
@@ -167,18 +184,22 @@ void ColorTracker::getComBbox(const cv::Mat& imgBinary,
 void ColorTracker::showImage(const cv::Mat& imgBinary,
                              const geometry_msgs::msg::Point& comMsg,
                              const vision_msgs::msg::BoundingBox2D& bboxMsg) {
-  cv::Mat object_img_color;
+  cv::Mat object_img_color;  // Input binary image in color format
   cv::cvtColor(imgBinary, object_img_color, cv::COLOR_GRAY2BGR);
 
-  double cx = comMsg.x;
-  double cy = comMsg.y;
+  double cx = comMsg.x;  // x coordinate of the CoM
+  double cy = comMsg.y;  // y coordinate of the CoM
 
-  double x1 = bboxMsg.center.position.x - bboxMsg.size_x / 2;
-  double y1 = bboxMsg.center.position.y - bboxMsg.size_y / 2;
-  double x2 = bboxMsg.center.position.x + bboxMsg.size_x / 2;
-  double y2 = bboxMsg.center.position.y + bboxMsg.size_y / 2;
+  double x1 =
+      bboxMsg.center.position.x - bboxMsg.size_x / 2;  // bbox top-left x
+  double y1 =
+      bboxMsg.center.position.y - bboxMsg.size_y / 2;  // bbox top-left y
+  double x2 =
+      bboxMsg.center.position.x + bboxMsg.size_x / 2;  // bbox bottom-right x
+  double y2 =
+      bboxMsg.center.position.y + bboxMsg.size_y / 2;  // bbox bottom-right y
 
-  if (cx != -1) {
+  if (cx != -1) {  // If object area is not 0
     cv::circle(object_img_color, cv::Point(cx, cy), 5, cv::Scalar(0, 0, 255),
                cv::FILLED, cv::LINE_8);
     cv::rectangle(object_img_color, cv::Point(x1, y1), cv::Point(x2, y2),
@@ -186,6 +207,11 @@ void ColorTracker::showImage(const cv::Mat& imgBinary,
   }
   cv::imshow("color_tracker", object_img_color);
   cv::waitKey(1);
+}
+
+bool ColorTracker::checkChannel(const std::string channel) {
+  return std::find(validChannels_.begin(), validChannels_.end(), channel) !=
+         validChannels_.end();
 }
 
 }  // namespace imgproc

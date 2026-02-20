@@ -4,7 +4,8 @@
   <name>img_proc</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="aleksei-ubuntu@todo.todo">aleksei-ubuntu</maintainer>
+  <maintainer email="alexey05072003@gmail.com">Aleksei Obshatko</maintainer>
+  <maintainer email="solisnlmax@gmail.com">Max Solis</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
