@@ -1,5 +1,0 @@
-ros2 run image_tools cam2image --ros-args -p width:=640 -p height:=480
-
-ros2 run img_proc color_tracker  --ros-args --params-file src/image_proc/config/color_tracker.yaml 
-
-ros2 param set /color_tracker threshold 200

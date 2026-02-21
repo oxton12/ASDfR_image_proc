@@ -19,7 +19,7 @@ Brightness::Brightness(const rclcpp::NodeOptions& options)
       std::bind(&Brightness::imageCallback, this, std::placeholders::_1));
 
   brightnessPub_ =
-      this->create_publisher<std_msgs::msg::String>("brightness estimate", 10);
+      this->create_publisher<std_msgs::msg::String>("brightness_estimate", 10);
 
   RCLCPP_INFO(this->get_logger(), "Brightness node started.");
 }

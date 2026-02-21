@@ -3,9 +3,9 @@
 // Group : ASDfR 5
 // License : LGPL open source license
 //
-// Brief : Node that detects the brightest region in a specific channel an image
-// received over the "image" topic and publishes it's center of mass in the
-// topic "tracked_CoM" and it's bounding box in topic "tracked_bbox"
+// Brief : Node that detects the brightest regions in a specific channel an
+// image received over the "image" topic and publishes it's center of mass in
+// the topic "tracked_CoM" and it's bounding box in topic "tracked_bbox"
 //==============================================================================
 
 #include <color_tracker.hpp>

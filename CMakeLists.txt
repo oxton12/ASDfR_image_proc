@@ -51,7 +51,7 @@ target_link_libraries(${PROJECT_NAME}
 rclcpp_components_register_node(
   ${PROJECT_NAME}
   PLUGIN "imgproc::Brightness"
-  EXECUTABLE brightness_node
+  EXECUTABLE brightness
 )
 
 rclcpp_components_register_node(
