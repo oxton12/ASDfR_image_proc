@@ -16,7 +16,7 @@ ros2 run cam2image_vm2ros cam2image
 
 In the second run
 ros2 run img_proc brightness
-Location in code: imageCallback in brightness.cpp
+Location in code: imageCallback() in brightness.cpp
 
 In the third run
 ros2 topic echo /brightness_estimate
@@ -27,7 +27,7 @@ ros2 run cam2image_vm2ros cam2image
 
 In the second run
 ros2 run img_proc brightness --ros-args -p threshold:=250
-Location in code: imageCallback in brightness.cpp
+Location in code: imageCallback() in brightness.cpp
 
 In the third run
 ros2 topic echo /brightness_estimate
@@ -35,7 +35,26 @@ ros2 topic echo /brightness_estimate
 In the fourth change the parameter by running
 ros2 param set /brightness threshold 100
 
-Assignment 25.2
+### Simple object-position indicator
+Open three terminals, in the first run
+ros2 run cam2image_vm2ros cam2image
+
+In the second run 
+ros2 run img_proc color_tracker
+Location in code: imageCallback() in color_tracker.cpp
+
+Or to use parameters listed in yaml file
+ros2 run img_proc color_tracker --ros-args --params-file src/image_proc/config/color_tracker.yaml
+Location in code: imageCallback() in color_tracker.cpp
+
+To view the center of mass position in the third run
+ros2 topic echo \tracked_CoM
+
+Or to view boinding box message
+ros2 topic echo \tracked_bbox
+
+
+Assignment 1.2
 −−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
 1. Open two new terminals, in the first run
 ros2 run my_custom_package node2
