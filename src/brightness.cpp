@@ -9,8 +9,6 @@
 
 #include <brightness.hpp>
 
-namespace imgproc {
-
 Brightness::Brightness(const rclcpp::NodeOptions& options)
     : Node("brightness", options) {
   threshold_ = this->declare_parameter<int>("threshold", 128);
@@ -58,6 +56,9 @@ void Brightness::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg) {
   brightnessPub_->publish(brightnessMsg);
 }
 
-}  // namespace imgproc
-
-RCLCPP_COMPONENTS_REGISTER_NODE(imgproc::Brightness)
+int main(int argc, char** argv) {
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<Brightness>());
+  rclcpp::shutdown();
+  return 0;
+}

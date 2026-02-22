@@ -18,8 +18,6 @@
 #include <std_msgs/msg/float32.hpp>
 #include <std_msgs/msg/string.hpp>
 
-namespace imgproc {
-
 /// @brief brightness node constructor
 /// @param options node options
 class Brightness : public rclcpp::Node {
@@ -41,6 +39,5 @@ class Brightness : public rclcpp::Node {
   // ROS parameters
   double threshold_;  // threshold for brightness decision
 };
-}  // namespace imgproc
 
 #endif  // __BRIGHTNESS_H__

@@ -214,6 +214,11 @@ bool ColorTracker::checkChannel(const std::string channel) {
          validChannels_.end();
 }
 
-}  // namespace imgproc
+int main(int argc, char** argv) {
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<ColorTracker>());
+  rclcpp::shutdown();
+  return 0;
+}
 
-RCLCPP_COMPONENTS_REGISTER_NODE(imgproc::ColorTracker)
+}  // namespace imgproc

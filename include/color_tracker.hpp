@@ -24,8 +24,6 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 
-namespace imgproc {
-
 class ColorTracker : public rclcpp::Node {
  public:
   /// @brief color_tracker node constructor
@@ -97,6 +95,5 @@ class ColorTracker : public rclcpp::Node {
   const std::vector<std::string> validChannels_{
       "r", "g", "b", "k"};  // all valid values of the channel parameter
 };
-}  // namespace imgproc
 
 #endif  // __COLOR_TRACKER_H__
