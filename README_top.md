@@ -56,16 +56,22 @@ ros2 topic echo \tracked_bbox
 
 Assignment 1.2
 −−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-1. Open two new terminals, in the first run
-ros2 run my_custom_package node2
-Location in code: colour_detection() function in image_analysis.cpp
-In the second run
-ros2 run my_other_custom_package node1
-Location in code: steer_calculation () function in steer ()
-Assignment 25.3
-−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−−
-1. Run
-ros2 launch my_custom_package start_all_nodes.launch.py
-and send a velocity
-ros2 topic pub /my_topic example_msgs/msg/Float64 "{data: 2.0}"
-Assignment connects node 1, 2 and node from other−package together.
+### Unit test the sequence controller using the RELbot Simulator
+In config/setpoints.yaml change setpoints to true
+Open a terminal and run
+ros2 launch seq_contr seq_contr.launch.py
+Location in code: sequenceController() in setpoint_sequence_node.cpp
+
+### Integration of image processing and RELbot Simulator
+In config/setpoints.yaml change setpoints to false and mode to false
+In seq_contr.launch.py change remapping of 'image' topic in 'color_tracker' node to 'image'
+Open a terminal and run
+ros2 launch seq_contr seq_contr.launch.py
+Location in code: sequenceController() in setpoint_sequence_node.cpp
+
+### Closed loop control of the RELbot Simulator
+In config/setpoints.yaml change setpoints to false and mode to true
+In seq_contr.launch.py change remapping of 'image' topic in 'color_tracker' node to 'output/moving_camera'
+Open a terminal and run
+ros2 launch seq_contr seq_contr.launch.py
+Location in code: sequenceController() in setpoint_sequence_node.cpp
