@@ -44,7 +44,7 @@ ros2 run img_proc color_tracker
 Location in code: imageCallback() in color_tracker.cpp
 
 Or to use parameters listed in yaml file
-ros2 run img_proc color_tracker --ros-args --params-file src/image_proc/config/color_tracker.yaml
+ros2 run img_proc color_tracker --ros-args --params-file src/img_proc/config/color_tracker.yaml
 Location in code: imageCallback() in color_tracker.cpp
 
 To view the center of mass position in the third run
