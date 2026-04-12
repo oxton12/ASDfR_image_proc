@@ -1,5 +1,5 @@
 /color_tracker:
   ros__parameters:
-    channel: 'k' # 'b' - blue, 'g' - green, 'r' - red, 'k' - grayscale
-    threshold: 190
+    lower_color: [35, 50, 35]
+    upper_color: [85, 255, 85]
     show_image: true

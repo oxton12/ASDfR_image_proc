@@ -38,11 +38,6 @@ class ColorTracker : public rclcpp::Node {
   /// @param msg Message containing an image
   void imageCallback(const sensor_msgs::msg::Image::SharedPtr msg);
 
-  /// @brief Extracts the desired channel from image
-  /// @param imgPtr Input image
-  /// @return An image which is a copy of the desired channel
-  cv::Mat extractChannel(const cv_bridge::CvImagePtr imgPtr);
-
   /// @brief Applies threshold, removes noise and fills gaps
   /// @param inputImg Input image
   /// @return Image after threshold and cleanup
@@ -65,12 +60,6 @@ class ColorTracker : public rclcpp::Node {
                  const geometry_msgs::msg::Point& comMsg,
                  const vision_msgs::msg::BoundingBox2D& bboxMsg);
 
-  /// @brief Checks whether string value representing channel to extract is
-  /// valid
-  /// @param channel
-  /// @return True if valid, false othrwise
-  bool checkChannel(const std::string channel);
-
   /// @brief Checks and applies received parameters
   /// @param params New parameters
   /// @return Result of parameter check
@@ -90,9 +79,12 @@ class ColorTracker : public rclcpp::Node {
 
   // ros parameters
   std::string channel_;  // chosen channel to look for the brightest object
-  int threshold_;        // the value of a pixel below which it will be set to 0
-  bool showImage_;  // whether to show the image after threshold with CoM and
-                    // bbox of the detected object
+  std::vector<long int>
+      lowerColor_;  // Lower HSV bound for green detection (H, S, V)
+  std::vector<long int>
+      upperColor_;  // Upper HSV bound for green detection (H, S, V)
+  bool showImage_;  // whether to show the image after threshold
+                    // with CoM and bbox of the detected object
 
   const std::vector<std::string> validChannels_{
       "r", "g", "b", "k"};  // all valid values of the channel parameter
