@@ -24,11 +24,11 @@ ColorTracker::ColorTracker(const rclcpp::NodeOptions& options)
       "tracked_bbox", 10);
 
   lowerColor_ =
-      this->declare_parameter("lower_color", std::vector<long int>{35, 50, 35});
+      this->declare_parameter("lower_color", std::vector<long int>{40, 80, 70});
   upperColor_ = this->declare_parameter("upper_color",
-                                        std::vector<long int>{85, 255, 85});
-  showImage_ = this->declare_parameter("show_image", false);
-  `1 callbackHandle_ = this->add_on_set_parameters_callback(std::bind(
+                                        std::vector<long int>{95, 255, 255});
+  showImage_ = this->declare_parameter("show_image", true);
+  callbackHandle_ = this->add_on_set_parameters_callback(std::bind(
       &ColorTracker::parametersCallback, this, std::placeholders::_1));
 
   RCLCPP_INFO(this->get_logger(), "Color_tracker node started.");
