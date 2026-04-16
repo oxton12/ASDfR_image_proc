@@ -1,5 +1,5 @@
 /color_tracker:
   ros__parameters:
-    lower_color: [40, 80, 70]
+    lower_color: [40, 80, 40]
     upper_color: [95, 255, 255]
     show_image: true

@@ -24,7 +24,7 @@ ColorTracker::ColorTracker(const rclcpp::NodeOptions& options)
       "tracked_bbox", 10);
 
   lowerColor_ =
-      this->declare_parameter("lower_color", std::vector<long int>{40, 80, 70});
+      this->declare_parameter("lower_color", std::vector<long int>{40, 80, 40});
   upperColor_ = this->declare_parameter("upper_color",
                                         std::vector<long int>{95, 255, 255});
   showImage_ = this->declare_parameter("show_image", true);
@@ -48,16 +48,19 @@ void ColorTracker::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg) {
   cv::Mat imgBinary =
       binaryze(imgPtr->image);  // image after threshold and cleanup
 
+  cv::Mat flipped;
+  cv::flip(imgBinary, flipped, -1);
+
   geometry_msgs::msg::Point comMsg;         // center of mass message
   vision_msgs::msg::BoundingBox2D bboxMsg;  // bounding box message
 
-  getComBbox(imgBinary, comMsg, bboxMsg);
+  getComBbox(flipped, comMsg, bboxMsg);
 
   trackedComPub_->publish(comMsg);
   trackedBboxPub_->publish(bboxMsg);
 
   if (showImage_) {
-    showImage(imgBinary, comMsg, bboxMsg);
+    showImage(flipped, comMsg, bboxMsg);
   }
 }
 
